@@ -1,6 +1,6 @@
 package ycm.yml.manager.example;
 
-import ycm.yml.manager.YcmField;
+import ycm.yml.manager.fields.YcmField;
 
 /**
  * Just an example of a ConfigObject

@@ -1,15 +1,18 @@
 package ycm.yml.manager.example;
 
-import ycm.yml.manager.YcmField;
-import ycm.yml.manager.YcmInlineComment;
-import ycm.yml.manager.YcmNewlineComment;
+import ycm.yml.manager.fields.YcmField;
+import ycm.yml.manager.fields.YcmInlineComment;
+import ycm.yml.manager.fields.YcmNewlineComment;
+import ycm.yml.manager.ycm.YcmFileNameable;
+
+import java.util.UUID;
 
 /**
  * Just an example of a ConfigObject
  *
  * @author Apple (amp7368)
  */
-public class ExampleYcmConfig {
+public class ExampleYcmConfig implements YcmFileNameable {
     /**
      * comments on the line where path is specified
      * override the name of the path
@@ -48,6 +51,22 @@ public class ExampleYcmConfig {
      * a field that will not be converted to yml
      */
     public String randomField;
+
+    /**
+     * the name the file will be saved under
+     */
+    private String filename = UUID.randomUUID().toString();
+
+
+    @Override
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    @Override
+    public String getFilename() {
+        return filename;
+    }
 
     @Override
     public String toString() {

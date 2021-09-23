@@ -1,5 +1,4 @@
-package ycm.yml.manager;
-
+package ycm.yml.manager.fields;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,14 +6,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * comments a path in a Yaml file
- * This is the inline version which will write the comment
- * on the same line the path is specified on
+ * tags a field in a ConfigObject for when it is converted to a file
  *
  * @author Apple (amp7368)
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
-public @interface YcmInlineComment {
-    String value();
+public @interface YcmField {
+    /**
+     * @return the overridden pathname of a variable
+     */
+    String pathname() default "";
 }

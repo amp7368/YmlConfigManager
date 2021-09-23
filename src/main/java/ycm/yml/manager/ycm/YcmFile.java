@@ -1,9 +1,8 @@
-package ycm.yml.manager;
+package ycm.yml.manager.ycm;
 
-import org.bukkit.configuration.Configuration;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.java.JavaPlugin;
+import ycm.yml.manager.YcmUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +12,7 @@ import java.io.IOException;
  *
  * @author Apple (amp7368)
  */
-public class YcmFile<Config> {
+public class YcmFile<Config> implements YcmHolder {
     private Ycm ycm;
     private final Class<Config> output;
     private final File file;
@@ -34,18 +33,15 @@ public class YcmFile<Config> {
     }
 
     public Config toConfig() throws IOException, InvalidConfigurationException {
-        return ycm.toConfig(file, output);
-    }
-
-    public Config toConfig(Configuration inputConfig, ConfigurationSection inputSection) {
-        return ycm.toConfig(output, inputConfig, inputSection);
+        return this.toConfig(file, output);
     }
 
     public void toFile(Config input) throws IOException {
-        ycm.toFile(input, file);
+        this.toFile(input, file);
     }
 
-    public CommentedConfiguration toCommentedConfig(Config input) {
-        return ycm.toCommentedConfig(input);
+    @Override
+    public Ycm getYcm() {
+        return ycm;
     }
 }

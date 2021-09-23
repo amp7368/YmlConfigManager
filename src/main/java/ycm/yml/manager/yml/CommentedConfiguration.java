@@ -1,8 +1,8 @@
-package ycm.yml.manager;
+package ycm.yml.manager.yml;
 
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.file.YamlRepresenter;
+import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -24,38 +24,28 @@ import java.util.Map;
 public class CommentedConfiguration extends YamlConfiguration {
     private final Map<String, String> commentsNewLine = new HashMap<>();
     private final Map<String, String> commentsInLine = new HashMap<>();
-    private final File file;
-
-    public CommentedConfiguration(File file) {
-        this.file = file;
-    }
-
-    public CommentedConfiguration() {
-        this.file = null;
-    }
-
-    public void load() throws IOException, InvalidConfigurationException {
-        this.load(file);
-    }
 
     @Override
-    public void save(File file) throws IOException {
+    public void save(@NotNull File file) throws IOException {
         super.save(file);
         this.addCommentsToFile(file);
     }
 
     @Override
-    public void save(String filename) throws IOException {
+    public void save(@NotNull String filename) throws IOException {
         File file = new File(filename);
         super.save(file);
         this.addCommentsToFile(file);
     }
 
-    public void save() throws IOException {
-        super.save(file);
-        this.addCommentsToFile(file);
-    }
 
+    /**
+     * add comments to the yml at fileForComments
+     * according to the paths specified in this config
+     *
+     * @param fileForComments the file to write to
+     * @throws IOException when there is an IOException reading or writing to fileForComments
+     */
     private void addCommentsToFile(File fileForComments) throws IOException {
         // if there's comments to add, and it saved fine, we need to add comments
 
@@ -68,6 +58,22 @@ public class CommentedConfiguration extends YamlConfiguration {
         // the file we just wrote to
         BufferedReader inputFileReader = new BufferedReader(new FileReader(fileForComments));
 
+        commentTheFile(tempOutputWriter, inputFileReader);
+        tempOutputWriter.flush();
+        tempOutputWriter.close();
+        inputFileReader.close();
+        File tempOldFile = new File(fileForComments.getAbsolutePath() + "temptemp");
+        boolean renamed = fileForComments.renameTo(tempOldFile);
+        if (tempOutputFile.renameTo(fileForComments)) {
+            if (renamed) {
+                tempOldFile.delete();
+            }
+        } else if (renamed) {
+            tempOldFile.renameTo(fileForComments);
+        }
+    }
+
+    private void commentTheFile(BufferedWriter tempOutputWriter, BufferedReader inputFileReader) throws IOException {
         // This holds the current path the lines are at in the config
         String currentPath = "";
         // This flags if the line is a node or unknown text.
@@ -86,75 +92,37 @@ public class CommentedConfiguration extends YamlConfiguration {
                 continue;
             isBeginning = false;
             // If the line is a node (and not something like a list value)
-            if (line.contains(": ") || (line.length() > 1 && line.charAt(line.length() - 1) == ':')) {
-
-                // This is a node so flag it as one
-                node = true;
-
-                // Grab the index of the end of the node name
-                int index;
-                index = line.indexOf(": ");
-                if (index < 0) {
-                    index = line.length() - 1;
+            node = line.contains(": ") || (line.length() > 1 && line.charAt(line.length() - 1) == ':');
+            if (node) {
+                // Grab the endNodeNameIndex of the end of the node name
+                int endNodeNameIndex = line.indexOf(": ");
+                if (endNodeNameIndex < 0) {
+                    endNodeNameIndex = line.length() - 1;
                 }
                 // If currentPath is empty, store the node name as the currentPath. (this is only on the first iteration, i think)
                 if (currentPath.isEmpty()) {
-                    currentPath = line.substring(0, index);
+                    currentPath = line.substring(0, endNodeNameIndex);
                 } else {
                     // Calculate the whitespace preceding the node name
-                    int whiteSpace = 0;
-                    for (int n = 0; n < line.length(); n++) {
-                        if (line.charAt(n) == ' ') {
-                            whiteSpace++;
-                        } else {
-                            break;
-                        }
-                    }
+                    int whiteSpace = calculateWhitespace(line);
                     // Find out if the current depth (whitespace * 2) is greater/lesser/equal to the previous depth
-                    if (whiteSpace / 2 > depth) {
+                    boolean isCurrentDepthGreater = whiteSpace / 2 > depth;
+                    boolean isCurrentDepthLess = whiteSpace / 2 < depth;
+                    if (isCurrentDepthGreater) {
                         // Path is deeper.  Add a . and the node name
-                        currentPath += "." + line.substring(whiteSpace, index);
+                        currentPath += "." + line.substring(whiteSpace, endNodeNameIndex);
                         depth++;
-                    } else if (whiteSpace / 2 < depth) {
+                    } else if (isCurrentDepthLess) {
                         // Path is shallower, calculate current depth from whitespace (whitespace / 2) and subtract that many levels from the currentPath
                         int newDepth = whiteSpace / 2;
-                        for (int i = 0; i < depth - newDepth; i++) {
-                            currentPath = currentPath.replace(currentPath.substring(currentPath.lastIndexOf(".")), "");
-                        }
-                        // Grab the index of the final period
-                        int lastIndex = currentPath.lastIndexOf(".");
-                        if (lastIndex < 0) {
-                            // if there isn't a final period, set the current path to nothing because we're at root
-                            currentPath = "";
-                        } else {
-                            // If there is a final period, replace everything after it with nothing
-                            currentPath = currentPath.replace(currentPath.substring(currentPath.lastIndexOf(".")), "");
-                            currentPath += ".";
-                        }
-                        // Add the new node name to the path
-                        currentPath += line.substring(whiteSpace, index);
+                        currentPath = getNewLessCurrentPath(currentPath, depth, line, endNodeNameIndex, whiteSpace, newDepth);
                         // Reset the depth
                         depth = newDepth;
                     } else {
                         // Path is same depth, replace the last path node name to the current node name
-                        int lastIndex = currentPath.lastIndexOf(".");
-                        if (lastIndex < 0) {
-                            // if there isn't a final period, set the current path to nothing because we're at root
-                            currentPath = "";
-                        } else {
-                            // If there is a final period, replace everything after it with nothing
-                            currentPath = currentPath.replace(currentPath.substring(currentPath.lastIndexOf(".")), "");
-                            currentPath += ".";
-                        }
-                        //currentPath = currentPath.replace(currentPath.substring(currentPath.lastIndexOf(".")), "");
-                        currentPath += line.substring(whiteSpace, index);
-
+                        currentPath = getNewEqualCurrentPath(currentPath, line, endNodeNameIndex, whiteSpace);
                     }
-
                 }
-
-            } else {
-                node = false;
             }
 
 
@@ -179,21 +147,52 @@ public class CommentedConfiguration extends YamlConfiguration {
             tempOutputWriter.write(line);
             tempOutputWriter.write(System.lineSeparator());
         }
-        tempOutputWriter.flush();
-        tempOutputWriter.close();
-        inputFileReader.close();
-        File tempOldFile = new File(fileForComments.getAbsolutePath() + "temptemp");
-        boolean renamed = fileForComments.renameTo(tempOldFile);
-        if (tempOutputFile.renameTo(fileForComments)) {
-            if (renamed) {
-                tempOldFile.delete();
-            }
-        } else if (renamed) {
-            tempOldFile.renameTo(fileForComments);
-        }
-
     }
 
+    @NotNull
+    private String getNewEqualCurrentPath(String currentPath, String line, int index, int whiteSpace) {
+        int lastIndex = currentPath.lastIndexOf(".");
+        if (lastIndex < 0) {
+            // if there isn't a final period, set the current path to nothing because we're at root
+            currentPath = "";
+        } else {
+            // If there is a final period, replace everything after it with nothing
+            currentPath = currentPath.substring(0, currentPath.lastIndexOf("."));
+            currentPath += ".";
+        }
+        currentPath += line.substring(whiteSpace, index);
+        return currentPath;
+    }
+
+    @NotNull
+    private String getNewLessCurrentPath(String currentPath, int depth, String line, int index, int whiteSpace, int newDepth) {
+        for (int i = 0; i < depth - newDepth; i++) {
+            currentPath = currentPath.replace(currentPath.substring(currentPath.lastIndexOf(".")), "");
+        }
+        // Grab the index of the final period
+        currentPath = getNewEqualCurrentPath(currentPath, line, index, whiteSpace);
+        return currentPath;
+    }
+
+    private int calculateWhitespace(String line) {
+        int whiteSpace = 0;
+        for (int n = 0; n < line.length(); n++) {
+            if (line.charAt(n) == ' ') {
+                whiteSpace++;
+            } else {
+                break;
+            }
+        }
+        return whiteSpace;
+    }
+
+    /**
+     * Adds a comment just before the specified path.
+     * An empty string will indicate a blank line.
+     *
+     * @param path        Configuration path to add comment.
+     * @param commentLine Comments to add. One String so line.
+     */
     public void addCommentNewline(String path, String commentLine, String... pathChildren) {
         addCommentNewline(path, new String[]{commentLine}, pathChildren);
     }
@@ -246,15 +245,7 @@ public class CommentedConfiguration extends YamlConfiguration {
         dumperOptions.setWidth(10000);
         YamlRepresenter yamlRepresenter = new YamlRepresenter();
         yamlRepresenter.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-
-        String dump = new Yaml(yamlRepresenter, dumperOptions).dump(getValues(false));
-
-
-        if (dump.equals(BLANK_CONFIG)) {
-            dump = "";
-        }
-
-        return dump;
+        return new Yaml(yamlRepresenter, dumperOptions).dump(getValues(false));
     }
 
     public Map<String, String> getCommentsNewLine() {
@@ -263,9 +254,5 @@ public class CommentedConfiguration extends YamlConfiguration {
 
     public Map<String, String> getCommentsInLine() {
         return new HashMap<>(commentsInLine);
-    }
-
-    public File getFile() {
-        return file;
     }
 }

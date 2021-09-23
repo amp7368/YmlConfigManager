@@ -1,9 +1,12 @@
 plugins {
+    id 'com.github.johnrengelman.shadow' version '6.0.0'
+    id 'java-library'
     id 'java'
+    id 'maven-publish'
 }
 
 group 'apple.ymlmanager'
-version '1.0'
+version 'v1.1'
 
 repositories {
     mavenCentral()
@@ -20,22 +23,34 @@ repositories {
 
     maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
     maven { url = 'https://oss.sonatype.org/content/repositories/central' }
+    maven {
+        url "https://jitpack.io"
+    }
 }
 java {
     toolchain {
-        languageVersion.set( JavaLanguageVersion.of(JavaVersion.VERSION_11.getMajorVersion()))
+        languageVersion.set(JavaLanguageVersion.of(JavaVersion.VERSION_11.getMajorVersion()))
     }
+}
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier = "sources"
 }
 
 dependencies {
+//    implementation('com.github.amp7368:AppleUtilities:AppleUtilitiesv1.0'){
+//
+//    }
     implementation 'org.jetbrains:annotations:20.1.0'
     compileOnly("org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT")
 }
 
-jar{
+jar {
     outputs.upToDateWhen { false }
 }
+shadowJar{
 
+}
 def filesToCopy = copySpec {
     from jar.getArchiveFile()
 }
