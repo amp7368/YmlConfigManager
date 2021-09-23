@@ -1,0 +1,12 @@
+pathA: valueA # a comment for A
+# a comment for B
+pathB: valueB
+pathC: 3
+pathD:
+  pathF: valueF
+  pathG: valueG
+  pathH: 5
+pathE: # a comment for pathE
+  pathI: valueI
+  pathJ: valueJ
+  pathK: 9
