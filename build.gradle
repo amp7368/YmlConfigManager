@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'apple.ymlmanager'
-version '1.0-BUILD-SNAPSHOT'
+version '1.0'
 
 repositories {
     mavenCentral()
