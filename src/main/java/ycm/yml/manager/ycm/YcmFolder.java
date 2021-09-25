@@ -1,5 +1,8 @@
 package ycm.yml.manager.ycm;
 
+import apple.utilities.request.AppleRequest;
+import apple.utilities.request.settings.RequestSettingsBuilder;
+import apple.utilities.request.settings.RequestSettingsBuilderVoid;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.java.JavaPlugin;
 import ycm.yml.manager.YcmUtil;
@@ -7,6 +10,7 @@ import ycm.yml.manager.YcmUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * a Ycm wrapper with the folder for multiple configs
@@ -43,11 +47,24 @@ public class YcmFolder<Config extends YcmFileNameable> implements YcmHolder {
      *
      * @return the configs represented in this folder
      */
-    public Map<String, Config> getAllConfig() {
+    public synchronized Map<String, Config> getAllConfig() {
         if (configs == null) {
             return reloadAllConfig();
         }
         return new HashMap<>(configs);
+    }
+
+    /**
+     * @param callback the callback to handle the configs represented in this folder
+     * @see #reloadAllConfig()
+     */
+    public synchronized void reloadAllConfigAsync(Consumer<Map<String, Config>> callback) {
+        if (configs == null) {
+            RequestSettingsBuilder<Map<String, Config>> settings = YcmConfigManager.getIgnoreFailSettings(callback, null);
+            getScheduler().queue(this::reloadAllConfig, callback, settings);
+        } else {
+            callback.accept(new HashMap<>(configs));
+        }
     }
 
     /**
@@ -67,11 +84,14 @@ public class YcmFolder<Config extends YcmFileNameable> implements YcmHolder {
             if (config != null) config.setFilename(configName);
             configs.put(configName, config);
         }
-        this.configs = new HashMap<>(configs);
+        synchronized (this) {
+            this.configs = new HashMap<>(configs);
+        }
         return configs;
     }
 
     private Config toConfigCaught(File file) {
+        // no sync(this) because we don't deal with any fields
         try {
             return ycm.toConfig(file, output);
         } catch (IOException | InvalidConfigurationException e) {
@@ -80,12 +100,35 @@ public class YcmFolder<Config extends YcmFileNameable> implements YcmHolder {
     }
 
     /**
+     * @param callback handle the list of config files that failed
+     *                 will be empty on successful execution
+     * @see #saveCachedConfigs()
+     */
+    public synchronized void saveCachedConfigsAsync(Consumer<List<File>> callback) {
+        if (configs == null) {
+            callback.accept(Collections.emptyList());
+        } else {
+            getScheduler().queue(this::saveCachedConfigs, callback);
+        }
+    }
+
+    /**
      * @return the list of config files that failed
      * will be empty on successful execution
      */
-    public List<File> saveCachedConfigs() {
+    public synchronized List<File> saveCachedConfigs() {
         if (this.configs == null) this.configs = new HashMap<>();
         return this.saveCachedConfigs(configs.values());
+    }
+
+    /**
+     * @param configsToSave the configs to save
+     * @param callback      handle the list of config files that failed
+     *                      will be empty on successful execution
+     * @see #saveCachedConfigs()
+     */
+    public synchronized void saveCachedConfigsAsync(Collection<Config> configsToSave, Consumer<List<File>> callback) {
+        getScheduler().queue(() -> this.saveCachedConfigs(configsToSave), callback);
     }
 
     /**
@@ -93,7 +136,7 @@ public class YcmFolder<Config extends YcmFileNameable> implements YcmHolder {
      * @return the list of config files that failed
      * will be empty on successful execution
      */
-    public List<File> saveCachedConfigs(Collection<Config> configsToSave) {
+    public synchronized List<File> saveCachedConfigs(Collection<Config> configsToSave) {
         List<File> fails = null;
         for (Config config : configsToSave) {
             try {
@@ -105,6 +148,23 @@ public class YcmFolder<Config extends YcmFileNameable> implements YcmHolder {
         }
 
         return fails == null ? Collections.emptyList() : fails;
+    }
+
+    /**
+     * saves the input to a file
+     *
+     * @param input    the input to save
+     * @param callback the callback to handle true if the save did not throw an exception
+     */
+    public void toFileAsync(Config input, Consumer<Boolean> callback) {
+        RequestSettingsBuilderVoid settings = YcmConfigManager.getIgnoreFailSettingsVoid(callback);
+        getScheduler().queueVoid(() -> {
+            try {
+                toFile(input);
+            } catch (IOException e) {
+                throw new AppleRequest.AppleRuntimeRequestException(e);
+            }
+        }, () -> callback.accept(true), settings);
     }
 
     /**
@@ -122,18 +182,78 @@ public class YcmFolder<Config extends YcmFileNameable> implements YcmHolder {
         return ycm;
     }
 
-    public void addConfig(Config config) {
+    /**
+     * the point of doing this async is to make sure you're
+     * definitely waiting <bold>at all</bold> in case it happens to be saving something atm
+     *
+     * @param config the config to add to the cache
+     */
+    public void addConfigAsync(Config config) {
+        getScheduler().queueVoid(() -> addConfig(config));
+    }
+
+    /**
+     * add the config to the cache
+     *
+     * @param config the config to add to the cache
+     */
+    public synchronized void addConfig(Config config) {
         if (this.configs == null) this.configs = new HashMap<>();
         this.configs.put(config.getFilename(), config);
     }
 
-    public void removeConfig(Config config) {
+    /**
+     * the point of doing this async is to make sure you're
+     * definitely waiting <bold>at all</bold> in case it happens to be saving something atm
+     *
+     * @param config the config remove from to the cache
+     */
+    public void removeConfigAsync(Config config) {
+        getScheduler().queueVoid(() -> removeConfig(config));
+    }
+
+    /**
+     * remove the config from the cache
+     *
+     * @param config the config to remove from the cache
+     */
+    public synchronized void removeConfig(Config config) {
         if (this.configs == null) this.configs = new HashMap<>();
         this.configs.remove(config.getFilename());
     }
 
-    public void removeConfig(String config) {
+    /**
+     * the point of doing this async is to make sure you're
+     * definitely waiting <bold>at all</bold> in case it happens to be saving something atm
+     *
+     * @param config the config to remove from the cache
+     */
+    public void removeConfigAsync(String config) {
+        getScheduler().queueVoid(() -> removeConfig(config));
+    }
+
+    /**
+     * remove the config from the cache
+     *
+     * @param config the config to remove from the cache
+     */
+    public synchronized void removeConfig(String config) {
         if (this.configs == null) this.configs = new HashMap<>();
         this.configs.remove(config);
+    }
+
+    /**
+     * the point of doing this async is to make sure you're
+     * definitely waiting <bold>at all</bold> in case it happens to be saving something atm
+     */
+    public synchronized void clearConfigsAsync() {
+        getScheduler().queueVoid(this::clearConfigs);
+    }
+
+    /**
+     * clears the cache of configs
+     */
+    public synchronized void clearConfigs() {
+        this.configs = new HashMap<>();
     }
 }

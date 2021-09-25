@@ -1,5 +1,6 @@
 package ycm.yml.manager.ycm;
 
+import apple.utilities.request.AppleRequestQueue;
 import org.bukkit.configuration.InvalidConfigurationException;
 
 import java.io.File;
@@ -13,6 +14,11 @@ import java.io.IOException;
  */
 public interface YcmHolder extends YcmConfigManager {
     Ycm getYcm();
+
+    @Override
+    default AppleRequestQueue getScheduler() {
+        return getYcm().getScheduler();
+    }
 
     @Override
     default <Config> Config toConfig(File inputFile, Class<Config> output) throws IOException, InvalidConfigurationException {
