@@ -27,21 +27,16 @@ repositories {
         url "https://jitpack.io"
     }
 }
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(JavaVersion.VERSION_11.getMajorVersion()))
-    }
-}
+project.targetCompatibility = JavaVersion.VERSION_1_8
+project.sourceCompatibility = JavaVersion.VERSION_1_8
 task sourceJar(type: Jar) {
     from sourceSets.main.allJava
     archiveClassifier = "sources"
 }
 
 dependencies {
-//    implementation('com.github.amp7368:AppleUtilities:AppleUtilitiesv1.0'){
-//
-//    }
-    implementation 'org.jetbrains:annotations:20.1.0'
+    implementation 'com.github.amp7368:AppleUtilities:1cf130e3513cfb908997fb83ec2e6bdcd31a2a7b'
+    implementation 'org.jetbrains:annotations:22.0.0'
     compileOnly("org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT")
 }
 

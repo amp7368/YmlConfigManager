@@ -1,23 +1,20 @@
 package ycm.yml.manager.ycm;
 
-import org.bukkit.configuration.InvalidConfigurationException;
-
-import java.io.File;
-import java.io.IOException;
-
 /**
  * a static version of Ycm that just uses the default config
  *
  * @author Apple (amp7368)
  */
-public class YcmDefault {
+public class YcmDefault implements YcmHolder {
     private static final Ycm defaultYcm = new Ycm();
+    private static final YcmDefault instance = new YcmDefault();
 
-    public static <Config> Config toConfig(File inputFile, Class<Config> output) throws IOException, InvalidConfigurationException {
-        return defaultYcm.toConfig(inputFile, output);
+    @Override
+    public Ycm getYcm() {
+        return defaultYcm;
     }
 
-    public static <Config> void toFile(Config input, File outputFile) throws IOException {
-        defaultYcm.toFile(input, outputFile);
+    public static YcmDefault getInstance() {
+        return instance;
     }
 }

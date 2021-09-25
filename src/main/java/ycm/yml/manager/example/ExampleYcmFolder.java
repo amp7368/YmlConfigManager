@@ -25,12 +25,24 @@ public class ExampleYcmFolder {
         save();
     }
 
+    public void doSpeedTest() {
+        initialize();
+        long start = System.currentTimeMillis();
+        save();
+        System.out.println("finished saving " + (System.currentTimeMillis() - start));
+        start = System.currentTimeMillis();
+        saveAsync(start);
+        System.out.println("started async " + (System.currentTimeMillis() - start));
+    }
+
     private void modify() {
         first.valueA = "THIS IS A NEW VALUE FOR A";
     }
 
     public void initialize() {
-        for (int i = 0; i < 20; i++) {
+        folder.clearConfigs();
+        folder.saveCachedConfigs();
+        for (int i = 0; i < 50; i++) {
             ExampleYcmConfig config = new ExampleYcmConfig();
             config.valueA = "valueA" + i;
             config.pathB = "valueB" + i;
@@ -54,6 +66,12 @@ public class ExampleYcmFolder {
 
     public void save() {
         folder.saveCachedConfigs();
+    }
+
+    private void saveAsync(long start) {
+        folder.saveCachedConfigsAsync((c) -> {
+            System.out.println("finished async " + (System.currentTimeMillis() - start));
+        });
     }
 
     public void print() {

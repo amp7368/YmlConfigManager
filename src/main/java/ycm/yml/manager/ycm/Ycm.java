@@ -1,5 +1,6 @@
 package ycm.yml.manager.ycm;
 
+import apple.utilities.request.AppleRequestQueue;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import ycm.yml.manager.fields.YcmField;
@@ -13,7 +14,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * the base class to convert between ConfigObjects and files
@@ -28,16 +28,19 @@ import java.util.Objects;
  * @see YcmNewlineComment
  */
 public class Ycm implements YcmConfigManager {
-    /**
-     * convert a file to a Config object
-     *
-     * @param inputFile the file to read into an object
-     * @param output    the type of the expected output Object
-     * @param <Config>  the type that will be returned
-     * @return the output Object with values from the yml file
-     * @throws IOException                   when there was an IOException reading from the file
-     * @throws InvalidConfigurationException when there was an invalid yml structure
-     */
+    private AppleRequestQueue scheduler = new YcmRequestService();
+
+    public Ycm withScheduler(AppleRequestQueue scheduler) {
+        this.scheduler = scheduler;
+        return this;
+    }
+
+    @Override
+    public AppleRequestQueue getScheduler() {
+        return scheduler;
+    }
+
+
     @Override
     public <Config> Config toConfig(File inputFile, Class<Config> output) throws IOException, InvalidConfigurationException {
         CommentedConfigurationWithFile outputConfig = new CommentedConfigurationWithFile(inputFile);
@@ -80,12 +83,12 @@ public class Ycm implements YcmConfigManager {
     private <Config> void handleYcmFieldToObject(ConfigurationSection inputConfig, Config outputObject, Field field, YcmField ycmField) {
         Class<?> fieldType = field.getType();
         String fieldName = ycmField.pathname();
-        if (fieldName.isBlank()) fieldName = field.getName();
+        if (fieldName.isEmpty()) fieldName = field.getName();
         Object fieldValue;
         if (inputConfig.isConfigurationSection(fieldName)) {
             fieldValue = toConfig(fieldType, inputConfig.getConfigurationSection(fieldName));
         } else {
-            fieldValue = Objects.requireNonNullElse(inputConfig, inputConfig).get(fieldName);
+            fieldValue = inputConfig.get(fieldName);
         }
         try {
             field.set(outputObject, fieldValue);
@@ -101,18 +104,14 @@ public class Ycm implements YcmConfigManager {
      */
     private YcmField prepareYcmField(Field field) {
         YcmField ycmField = field.getAnnotation(YcmField.class);
-        field.trySetAccessible();
+        try {
+            field.setAccessible(true);
+        } catch (SecurityException ignored) {
+        }
         return ycmField;
     }
 
-    /**
-     * convert the Config object to a yml file at outputFile's location
-     *
-     * @param input      the Config object
-     * @param outputFile the file to write the Config object to
-     * @param <Config>   the parameter Config object
-     * @throws IOException when there was an IOException writing to the file
-     */
+
     @Override
     public <Config> void toFile(Config input, File outputFile) throws IOException {
         CommentedConfiguration outputConfig = toCommentedConfig(input);
@@ -148,7 +147,7 @@ public class Ycm implements YcmConfigManager {
     private <Config> void handleYcmFieldToCommentedConfig(Config input, CommentedConfiguration outputConfig, Field field, YcmField ycmField) {
         Class<?> fieldType = field.getType();
         String fieldName = ycmField.pathname();
-        if (fieldName.isBlank()) fieldName = field.getName();
+        if (fieldName.isEmpty()) fieldName = field.getName();
         Object fieldValue;
         try {
             fieldValue = field.get(input);
@@ -216,5 +215,4 @@ public class Ycm implements YcmConfigManager {
                 fieldType.equals(Float.class) ||
                 fieldType.equals(Double.class);
     }
-
 }
