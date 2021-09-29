@@ -35,16 +35,16 @@ publishing {
             artifact shadowJar
             pom {
                 group = project.group
-                version = project.version
-                name = project.name + '-all'
+                version = project.version + '-all'
+                name = project.name
             }
         }
-        simplePublication(MavenPublication){
+        simplePublication(MavenPublication) {
             artifact jar
             pom {
                 group = project.group
-                version = project.version
-                name = project.name+'-simple'
+                version = project.version + '-simple'
+                name = project.name
             }
         }
     }
@@ -61,7 +61,7 @@ jar {
 }
 
 shadowJar {
-    dependsOn (jar)
+    dependsOn(jar)
     classifier 'all'
     outputs.upToDateWhen { false }
     relocate('apple.utilities', 'ycm.ymlmanager.plugin.apple.utilities')
