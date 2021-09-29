@@ -36,7 +36,7 @@ publishing {
             pom {
                 group = project.group
                 version = project.version
-                name = project.name
+                name = project.name + '-all'
             }
         }
         simplePublication(MavenPublication){
@@ -44,7 +44,7 @@ publishing {
             pom {
                 group = project.group
                 version = project.version
-                name = project.name
+                name = project.name+'-simple'
             }
         }
     }
