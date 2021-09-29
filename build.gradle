@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'apple.ymlmanager'
-version 'v1.1'
+version 'v1.2'
 
 repositories {
     mavenCentral()
@@ -31,8 +31,16 @@ project.targetCompatibility = JavaVersion.VERSION_1_8
 project.sourceCompatibility = JavaVersion.VERSION_1_8
 publishing {
     publications {
-        myPublication(MavenPublication) {
+        fullPublication(MavenPublication) {
             artifact shadowJar
+            pom {
+                group = project.group
+                version = project.version
+                name = project.name
+            }
+        }
+        simplePublication(MavenPublication){
+            artifact jar
             pom {
                 group = project.group
                 version = project.version
@@ -47,12 +55,13 @@ dependencies {
     compileOnly 'org.jetbrains:annotations:22.0.0'
     compileOnly "org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT"
 }
+jar {
+    classifier 'simple'
+    outputs.upToDateWhen { false }
+}
 
-shadowJar{
-    dependsOn jar {
-        classifier 'simple'
-        outputs.upToDateWhen { false }
-    }
+shadowJar {
+    dependsOn (jar)
     classifier 'all'
     outputs.upToDateWhen { false }
     relocate('apple.utilities', 'ycm.ymlmanager.plugin.apple.utilities')
