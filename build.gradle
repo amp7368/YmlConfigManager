@@ -29,15 +29,11 @@ repositories {
 }
 project.targetCompatibility = JavaVersion.VERSION_1_8
 project.sourceCompatibility = JavaVersion.VERSION_1_8
-task sourceJar(type: Jar) {
-    from sourceSets.main.allJava
-    archiveClassifier = "sources"
-}
 publishing {
     publications {
         myPublication(MavenPublication) {
             from components.java
-            artifact sourceJar
+            artifact shadowJar
             pom {
                 group = project.group
                 version = project.version
@@ -57,7 +53,7 @@ jar {
     outputs.upToDateWhen { false }
 }
 shadowJar{
-
+    relocate('apple.utilities', 'ycm.ymlmanager.plugin.apple.utilities')
 }
 def filesToCopy = copySpec {
     from jar.getArchiveFile()
