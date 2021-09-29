@@ -32,7 +32,6 @@ project.sourceCompatibility = JavaVersion.VERSION_1_8
 publishing {
     publications {
         myPublication(MavenPublication) {
-            from components.java
             artifact shadowJar
             pom {
                 group = project.group
@@ -51,11 +50,15 @@ dependencies {
 
 shadowJar{
     dependsOn jar {
+        classifier 'simple'
         outputs.upToDateWhen { false }
     }
+    classifier 'all'
     outputs.upToDateWhen { false }
     relocate('apple.utilities', 'ycm.ymlmanager.plugin.apple.utilities')
 }
+
+
 def filesToCopy = copySpec {
     from jar.getArchiveFile()
 }
