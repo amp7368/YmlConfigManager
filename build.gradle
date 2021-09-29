@@ -33,9 +33,22 @@ task sourceJar(type: Jar) {
     from sourceSets.main.allJava
     archiveClassifier = "sources"
 }
+publishing {
+    publications {
+        myPublication(MavenPublication) {
+            from components.java
+            artifact sourceJar
+            pom {
+                group = project.group
+                version = project.version
+                name = project.name
+            }
+        }
+    }
+}
 
 dependencies {
-    implementation 'com.github.amp7368:AppleUtilities:1cf130e3513cfb908997fb83ec2e6bdcd31a2a7b'
+    implementation 'com.github.amp7368:AppleUtilities:AppleUtilitiesCompatiblev1.0'
     implementation 'org.jetbrains:annotations:22.0.0'
     compileOnly("org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT")
 }
