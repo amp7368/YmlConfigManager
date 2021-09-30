@@ -51,11 +51,11 @@ publishing {
         }
     }
 }
-publishFullPublicationPublicationToMavenLocal{
-    version = project.version + '-all'
+generatePomFileForFullPublicationPublication {
+    destination  new File(destination.getParentFile(), 'pom-all.xml')
 }
-publishSimplePublicationPublicationToMavenLocal{
-    version = project.version + '-simple'
+generatePomFileForSimplePublicationPublication {
+    destination  new File(destination.getParentFile(), 'pom-simple.xml')
 }
 
 dependencies {
