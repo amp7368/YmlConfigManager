@@ -32,6 +32,7 @@ project.sourceCompatibility = JavaVersion.VERSION_1_8
 publishing {
     publications {
         fullPublication(MavenPublication) {
+            version = project.version + '-all'
             artifact shadowJar
             pom {
                 group = project.group
@@ -40,6 +41,7 @@ publishing {
             }
         }
         simplePublication(MavenPublication) {
+            version = project.version + '-simple'
             artifact jar
             pom {
                 group = project.group
@@ -48,6 +50,12 @@ publishing {
             }
         }
     }
+}
+publishFullPublicationPublicationToMavenLocal{
+    version = project.version + '-all'
+}
+publishSimplePublicationPublicationToMavenLocal{
+    version = project.version + '-simple'
 }
 
 dependencies {

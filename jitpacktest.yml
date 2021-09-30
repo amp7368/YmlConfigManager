@@ -1,0 +1,5 @@
+before_install:
+  - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
+  - source ./install-jdk.sh --feature 16 --license GPL
+install:
+  - ./gradlew clean -Pgroup=com.github.amp7368 -Pversion=3b4b54f971 -xtest build publishToMavenLocal
