@@ -30,7 +30,6 @@ project.sourceCompatibility = JavaVersion.VERSION_1_8
 publishing {
     publications {
         fullPublication(MavenPublication) {
-            version = project.version + '-all'
             artifact shadowJar
             pom {
                 group = project.group
@@ -38,10 +37,7 @@ publishing {
                 name = project.name
             }
         }
-    }
-    publications {
         simplePublication(MavenPublication) {
-            version = project.version + '-simple'
             artifact jar
             pom {
                 group = project.group
@@ -51,13 +47,16 @@ publishing {
         }
     }
 }
+
+artifacts {
+    archives jar
+    archives shadowJar
+}
+
 group 'apple.ymlmanager'
 version 'v1.2'
 
-task jarSources(type: Jar, dependsOn: classes) {
-    archiveClassifier.set 'sources'
-    from sourceSets.main.allSource
-}
+
 dependencies {
     implementation 'com.github.amp7368:AppleUtilities:AppleUtilitiesCompatiblev1.0'
     compileOnly 'org.jetbrains:annotations:22.0.0'
