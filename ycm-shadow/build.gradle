@@ -1,13 +1,11 @@
+jar{
+    classifier 'simple'
+}
 shadowJar {
     dependsOn(jar)
-    classifier 'all'
     outputs.upToDateWhen { false }
     relocate('apple.utilities', 'ycm.ymlmanager.plugin.apple.utilities')
 }
-artifacts {
-    archives shadowJar
-}
-
 publishing {
     publications {
         fullPublication(MavenPublication) {
