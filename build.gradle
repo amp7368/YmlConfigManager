@@ -52,10 +52,10 @@ publishing {
     }
 }
 generatePomFileForFullPublicationPublication {
-    destination  new File('~/.m2/full/pom.xml')
+    destination  new File('.m2/full/pom.xml')
 }
 generatePomFileForSimplePublicationPublication {
-    destination  new File('~/.m2/simple/pom.xml')
+    destination  new File('.m2/simple/pom.xml')
 }
 
 dependencies {
