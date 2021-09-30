@@ -5,8 +5,6 @@ plugins {
     id 'maven-publish'
 }
 
-group 'apple.ymlmanager'
-version 'v1.2'
 
 repositories {
     mavenCentral()
@@ -40,6 +38,8 @@ publishing {
                 name = project.name
             }
         }
+    }
+    publications {
         simplePublication(MavenPublication) {
             version = project.version + '-simple'
             artifact jar
@@ -51,13 +51,13 @@ publishing {
         }
     }
 }
-generatePomFileForFullPublicationPublication {
-    destination  new File('.m2/full/pom.xml')
-}
-generatePomFileForSimplePublicationPublication {
-    destination  new File('.m2/simple/pom.xml')
-}
+group 'apple.ymlmanager'
+version 'v1.2'
 
+task jarSources(type: Jar, dependsOn: classes) {
+    archiveClassifier.set 'sources'
+    from sourceSets.main.allSource
+}
 dependencies {
     implementation 'com.github.amp7368:AppleUtilities:AppleUtilitiesCompatiblev1.0'
     compileOnly 'org.jetbrains:annotations:22.0.0'
