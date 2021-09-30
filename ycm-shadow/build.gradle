@@ -1,4 +1,4 @@
-jar{
+jar {
     classifier 'simple'
 }
 shadowJar {
@@ -20,9 +20,11 @@ publishing {
     }
 }
 dependencies {
-    implementation project(path: ':main-code')
-    implementation 'com.github.amp7368:AppleUtilities:AppleUtilitiesCompatiblev1.0'
+    parent.ext.shadowCompileOnly.forEach (d) -> {
+        dependencies.compileOnly d
+    }
+    parent.ext.shadowImplementation.forEach (d) -> {
+        dependencies.implementation d
+    }
 
-    compileOnly 'org.jetbrains:annotations:22.0.0'
-    compileOnly "org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT"
 }

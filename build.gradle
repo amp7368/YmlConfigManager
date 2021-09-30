@@ -10,6 +10,16 @@ allprojects {
     group 'apple.ymlmanager'
     version 'v1.2'
 }
+project.ext.shadowCompileOnly =
+        [
+                'org.jetbrains:annotations:22.0.0',
+                "org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT"
+        ]
+
+project.ext.shadowImplementation =
+        [
+                'com.github.amp7368:AppleUtilities:AppleUtilitiesCompatiblev1.0',
+        ]
 
 subprojects {
     apply plugin: 'com.github.johnrengelman.shadow'
@@ -34,23 +44,24 @@ subprojects {
         maven { url 'https://oss.sonatype.org/content/repositories/central' }
         maven { url "https://jitpack.io" }
     }
+    dependencies {
+        if (project.name != 'main-code') {
+            dependencies.implementation project(path: ':main-code')
+        }
+    }
+    shadowJar {
+        dependencies {
+            parent.ext.shadowCompileOnly.forEach (d) -> {
+                shadowJar.dependencies {
+                    exclude(dependency(d))
+                }
+            }
+        }
+    }
 }
 
 project.targetCompatibility = JavaVersion.VERSION_1_8
 project.sourceCompatibility = JavaVersion.VERSION_1_8
-
-dependencies {
-    compileOnly 'com.github.amp7368:AppleUtilities:AppleUtilitiesCompatiblev1.0'
-    compileOnly 'org.jetbrains:annotations:22.0.0'
-    compileOnly "org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT"
-}
-
-//shadowOnlyDependencies {
-//
-//}
-//shadowAndJarDependencies{
-//
-//}
 
 def filesToCopy = copySpec {
     from jar.getArchiveFile()

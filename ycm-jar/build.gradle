@@ -17,12 +17,20 @@ jar {
 shadowJar{
     outputs.upToDateWhen { false }
     archiveClassifier.set('')
+    dependencies {
+        parent.ext.shadowImplementation.forEach (d) -> {
+            shadowJar.dependencies {
+                exclude(dependency(d))
+            }
+        }
+    }
 }
 
 dependencies {
-    implementation project(path: ':main-code')
-    compileOnly 'com.github.amp7368:AppleUtilities:AppleUtilitiesCompatiblev1.0'
-
-    compileOnly 'org.jetbrains:annotations:22.0.0'
-    compileOnly "org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT"
+    parent.ext.shadowCompileOnly.forEach (d) -> {
+        dependencies.compileOnly d
+    }
+    parent.ext.shadowImplementation.forEach (d) -> {
+        dependencies.compileOnly d
+    }
 }
