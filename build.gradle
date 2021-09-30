@@ -52,10 +52,10 @@ publishing {
     }
 }
 generatePomFileForFullPublicationPublication {
-    destination  new File(destination.getParentFile(), 'pom-all.xml')
+    destination  new File(destination.getParentFile(), 'pom.xml')
 }
 generatePomFileForSimplePublicationPublication {
-    destination  new File(destination.getParentFile(), 'pom-simple.xml')
+    destination  new File(destination.getParentFile(), 'pom.xml')
 }
 
 dependencies {
