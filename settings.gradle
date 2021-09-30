@@ -1,2 +1,5 @@
 rootProject.name = 'YmlFileManager'
+include 'empty-jar'
+include 'empty-shadow'
+include 'main-code'
 

@@ -1,0 +1,29 @@
+publishing {
+    publications {
+        simplePublication(MavenPublication) {
+            artifact shadowJar
+            pom {
+                group = project.group
+                version = project.version + '-simple'
+                name = project.name
+            }
+        }
+    }
+}
+
+artifacts {
+    archives shadowJar
+}
+
+jar {
+    classifier 'simple'
+    outputs.upToDateWhen { false }
+}
+
+dependencies {
+    implementation project(path: ':main-code')
+    compileOnly 'com.github.amp7368:AppleUtilities:AppleUtilitiesCompatiblev1.0'
+
+    compileOnly 'org.jetbrains:annotations:22.0.0'
+    compileOnly "org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT"
+}

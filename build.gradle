@@ -3,78 +3,49 @@ plugins {
     id 'java-library'
     id 'java'
     id 'maven-publish'
+
 }
 
+allprojects {
+    group 'apple.ymlmanager'
+    version 'v1.2'
+}
 
-repositories {
-    mavenCentral()
-    maven {
-        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+subprojects {
+    apply plugin: 'com.github.johnrengelman.shadow'
+    apply plugin: 'java-library'
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
 
-        // As of Gradle 5.1, you can limit this to only those
-        // dependencies you expect from it
-        content {
-            includeGroup 'org.bukkit'
-            includeGroup 'org.spigotmc'
+    repositories {
+        mavenCentral()
+        maven {
+            url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+
+            // As of Gradle 5.1, you can limit this to only those
+            // dependencies you expect from it
+            content {
+                includeGroup 'org.bukkit'
+                includeGroup 'org.spigotmc'
+            }
+        }
+
+        maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url = 'https://oss.sonatype.org/content/repositories/central' }
+        maven {
+            url "https://jitpack.io"
         }
     }
-
-    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
-    maven { url = 'https://oss.sonatype.org/content/repositories/central' }
-    maven {
-        url "https://jitpack.io"
-    }
 }
+
 project.targetCompatibility = JavaVersion.VERSION_1_8
 project.sourceCompatibility = JavaVersion.VERSION_1_8
-publishing {
-    publications {
-        fullPublication(MavenPublication) {
-            artifact shadowJar
-            pom {
-                group = project.group
-                version = project.version + '-all'
-                name = project.name
-            }
-        }
-        simplePublication(MavenPublication) {
-            artifact jar
-            pom {
-                group = project.group
-                version = project.version + '-simple'
-                name = project.name
-            }
-        }
-    }
-}
-
-artifacts {
-    archives jar
-    archives shadowJar
-}
-
-group 'apple.ymlmanager'
-version 'v1.2'
-
 
 dependencies {
     implementation 'com.github.amp7368:AppleUtilities:AppleUtilitiesCompatiblev1.0'
     compileOnly 'org.jetbrains:annotations:22.0.0'
     compileOnly "org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT"
 }
-jar {
-    classifier 'simple'
-    outputs.upToDateWhen { false }
-}
-
-shadowJar {
-    dependsOn(jar)
-    classifier 'all'
-    outputs.upToDateWhen { false }
-    relocate('apple.utilities', 'ycm.ymlmanager.plugin.apple.utilities')
-}
-
-
 def filesToCopy = copySpec {
     from jar.getArchiveFile()
 }
