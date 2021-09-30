@@ -1,5 +1,5 @@
 rootProject.name = 'YmlFileManager'
-include 'empty-jar'
-include 'empty-shadow'
+include 'ycm-jar'
+include 'ycm-shadow'
 include 'main-code'
 

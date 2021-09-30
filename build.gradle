@@ -42,7 +42,7 @@ project.targetCompatibility = JavaVersion.VERSION_1_8
 project.sourceCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
-    implementation 'com.github.amp7368:AppleUtilities:AppleUtilitiesCompatiblev1.0'
+    compileOnly 'com.github.amp7368:AppleUtilities:AppleUtilitiesCompatiblev1.0'
     compileOnly 'org.jetbrains:annotations:22.0.0'
     compileOnly "org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT"
 }

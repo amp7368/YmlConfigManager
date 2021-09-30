@@ -4,7 +4,7 @@ publishing {
             artifact shadowJar
             pom {
                 group = project.group
-                version = project.version + '-simple'
+                version = project.version
                 name = project.name
             }
         }
