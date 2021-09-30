@@ -3,24 +3,26 @@ plugins {
     id 'java-library'
     id 'java'
     id 'maven-publish'
-
 }
 
-allprojects {
-    group 'apple.ymlmanager'
-    version 'v1.2'
+allprojects { p ->
+    group groupValue
+    version versionValue
 }
-project.ext.shadowCompileOnly =
-        [
-                'org.jetbrains:annotations:22.0.0',
-                "org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT"
-        ]
 
-project.ext.shadowImplementation =
-        [
-                'com.github.amp7368:AppleUtilities:AppleUtilitiesCompatiblev1.0',
-        ]
+apply from: 'private-gradle.properties'
 
+ext {
+    shadowCompileOnly =
+            [
+                    'org.jetbrains:annotations:22.0.0',
+                    "org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT"
+            ]
+    shadowImplementation =
+            [
+                    'com.github.amp7368:AppleUtilities:AppleUtilitiesCompatiblev1.0',
+            ]
+}
 subprojects {
     apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: 'java-library'
@@ -69,9 +71,11 @@ def filesToCopy = copySpec {
 task jarAndCopyFiles {
     dependsOn(jar)
     doLast {
-        copy {
-            with filesToCopy
-            into outputfile
+        if (outputfile != null && !outputfile.isEmpty()) {
+            copy {
+                with filesToCopy
+                into outputfile
+            }
         }
     }
     outputs.upToDateWhen { false }

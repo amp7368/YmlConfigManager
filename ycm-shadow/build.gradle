@@ -1,12 +1,16 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 jar {
     classifier 'simple'
 }
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+    prefix = packageValue // Default value is "shadow"
+}
 shadowJar {
+    dependsOn(relocateShadowJar)
     outputs.upToDateWhen { false }
     archiveClassifier.set('')
-    relocate('apple.utilities', 'ycm.ymlmanager.plugin.apple.utilities')
 }
-
 publishing {
     publications {
         fullPublication(MavenPublication) {
@@ -26,5 +30,4 @@ dependencies {
     parent.ext.shadowImplementation.forEach (d) -> {
         dependencies.implementation d
     }
-
 }
