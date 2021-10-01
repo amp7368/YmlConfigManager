@@ -1,2 +1,4 @@
 rootProject.name = 'YmlFileManager'
-
+include 'ycm-jar'
+include 'ycm-shadow'
+include 'main-code'

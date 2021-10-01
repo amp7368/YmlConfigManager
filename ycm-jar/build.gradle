@@ -1,0 +1,36 @@
+publishing {
+    publications {
+        simplePublication(MavenPublication) {
+            artifact shadowJar
+            pom {
+                group = project.group
+                version = project.version
+                name = project.name
+            }
+        }
+    }
+}
+
+jar {
+    classifier 'simple'
+}
+shadowJar{
+    outputs.upToDateWhen { false }
+    archiveClassifier.set('')
+    dependencies {
+        parent.ext.shadowImplementation.forEach (d) -> {
+            shadowJar.dependencies {
+                exclude(dependency(d))
+            }
+        }
+    }
+}
+
+dependencies {
+    parent.ext.shadowCompileOnly.forEach (d) -> {
+        dependencies.compileOnly d
+    }
+    parent.ext.shadowImplementation.forEach (d) -> {
+        dependencies.compileOnly d
+    }
+}

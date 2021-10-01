@@ -1,0 +1,33 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+jar {
+    classifier 'simple'
+}
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+    prefix = packageValue // Default value is "shadow"
+}
+shadowJar {
+    dependsOn(relocateShadowJar)
+    outputs.upToDateWhen { false }
+    archiveClassifier.set('')
+}
+publishing {
+    publications {
+        fullPublication(MavenPublication) {
+            artifact shadowJar
+            pom {
+                group = project.group
+                version = project.version
+                name = project.name
+            }
+        }
+    }
+}
+dependencies {
+    parent.ext.shadowCompileOnly.forEach (d) -> {
+        dependencies.compileOnly d
+    }
+    parent.ext.shadowImplementation.forEach (d) -> {
+        dependencies.implementation d
+    }
+}

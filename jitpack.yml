@@ -1,4 +1,0 @@
-install:
-  - ./gradlew clean -Pgroup=com.github.amp7368 -Pversion=3b4b54f971 -xtest build
-  - ./gradlew -Pgroup=com.github.amp7368 -Pversion=3b4b54f971-all -xtest publishFullPublicationPublicationToMavenLocal
-  - ./gradlew -Pgroup=com.github.amp7368 -Pversion=3b4b54f971-simple -xtest publishSimplePublicationPublicationToMavenLocal
