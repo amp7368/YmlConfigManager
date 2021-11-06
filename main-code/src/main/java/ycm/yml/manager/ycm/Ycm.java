@@ -63,7 +63,7 @@ public class Ycm implements YcmConfigManager {
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new IllegalArgumentException(String.format("%s does not have a constructor with no arguments for Ycm", output.getName()));
         }
-        for (Field field : outputObject.getClass().getDeclaredFields()) {
+        for (Field field : outputObject.getClass().getFields()) {
             YcmField ycmField = prepareYcmField(field);
             if (ycmField == null) continue;
             handleYcmFieldToObject(inputSection, outputObject, field, ycmField);
@@ -127,7 +127,7 @@ public class Ycm implements YcmConfigManager {
      */
     private <Config> CommentedConfiguration toCommentedConfig(Config input) {
         CommentedConfiguration outputConfig = new CommentedConfiguration();
-        for (Field field : input.getClass().getDeclaredFields()) {
+        for (Field field : input.getClass().getFields()) {
             YcmField ycmField = prepareYcmField(field);
             if (ycmField == null) continue;
             handleYcmFieldToCommentedConfig(input, outputConfig, field, ycmField);
