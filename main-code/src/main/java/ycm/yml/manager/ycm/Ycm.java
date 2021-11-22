@@ -3,6 +3,7 @@ package ycm.yml.manager.ycm;
 import apple.utilities.request.AppleRequestQueue;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.jetbrains.annotations.Nullable;
 import ycm.yml.manager.fields.YcmField;
 import ycm.yml.manager.fields.YcmInlineComment;
 import ycm.yml.manager.fields.YcmNewlineComment;
@@ -90,6 +91,7 @@ public class Ycm implements YcmConfigManager {
         } else {
             fieldValue = inputConfig.get(fieldName);
         }
+        if (fieldValue == null) return;
         try {
             field.set(outputObject, fieldValue);
         } catch (IllegalAccessException ignored) {
@@ -125,8 +127,9 @@ public class Ycm implements YcmConfigManager {
      * @param <Config> the type of the input object
      * @return the new CommentedConfiguration
      */
-    private <Config> CommentedConfiguration toCommentedConfig(Config input) {
+    private <Config> CommentedConfiguration toCommentedConfig(@Nullable Config input) {
         CommentedConfiguration outputConfig = new CommentedConfiguration();
+        if (input == null) return outputConfig;
         for (Field field : input.getClass().getFields()) {
             YcmField ycmField = prepareYcmField(field);
             if (ycmField == null) continue;
